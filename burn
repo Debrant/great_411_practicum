@@ -1,0 +1,49 @@
+#!/bin/bash
+#################################################################
+#################################################################
+# 	J.S.PEIRCE
+# 	PRACTICUUM TESTSCRIPT FOR ATMEGA 328 AVR ISP PROGRAMMING 	
+#	ECE411-FALL 2014
+# 	PORTLAND STATE UNIVERSITY
+# 	TEAM T01
+# 	26 OCTOBER 2014
+#################################################################
+#################################################################
+
+#DISPLAY USAGE
+avrdude
+
+echo FOR HELP ON A SPECIFIC OPTION USE:
+echo "avrdude <option> ?"
+
+echo TO ENTER TERMINAL \(INTERACTIVE MODE\) USE\:
+echo "avrdude -t"
+
+echo ENTER PART NUMBER\:
+echo POSSIBLE ATMEGA328 PART NUMBERS:
+avrdude -p ? 2>&1 | grep 328
+read PART
+
+echo ENTER PROGRAM NAME\:
+read PROG
+
+echo your current settings are\: 
+echo "avrdude -P usb -c dragon_isp -p $PART -U flash:w:$PART"
+
+echo is this correct\? enter 1 if so 0 if not
+
+read CHOICE
+
+if [ $CHOICE -eq 1 ]; then
+
+	echo flashing board....
+
+	avrdude -P usb -c dragon_isp -p $PART -U flash:w:$PROG
+fit
+
+exit 0
+#################################################################
+#################################################################
+# 	EOF
+#################################################################
+#################################################################
