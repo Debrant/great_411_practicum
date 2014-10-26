@@ -28,7 +28,7 @@ echo ENTER PROGRAM NAME\:
 read PROG
 
 echo your current settings are\: 
-echo "avrdude -P usb -c dragon_isp -p $PART -U flash:w:$PART"
+echo "avrdude -P usb -c dragon_isp -p $PART -U flash:w:$PROG"
 
 echo is this correct\? enter 1 if so 0 if not
 
@@ -39,7 +39,7 @@ if [ $CHOICE -eq 1 ]; then
 	echo flashing board....
 
 	avrdude -P usb -c dragon_isp -p $PART -U flash:w:$PROG
-fit
+fi
 
 exit 0
 #################################################################
