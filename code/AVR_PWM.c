@@ -160,18 +160,24 @@ void pwm_init(void){
 void pwm_start(uint8_t PULSE_WIDTH){
 	OCR1AL = PULSE_WIDTH;
 	OCR1AH = 0;
-	DDRB |= (1<<5); /*PORTB, BIT 5 AS OUTPUT*/
+	//DDRB |= (1<<5); /*PORTB, BIT 5 AS OUTPUT*/
 	TCCR1A = 0x81;  /*8-BIT, NON-INVERTED PWM*/
 	TCCR1B = 1; /*START PWM*/
 }/*end pwm_start*/
 
 ISR(INT0_vect){/*INTERRUPT SERVICE ROUTINE*/
 	ATOMIC_BLOCK(ATOMIC_FORCEON){/*WE DO NOT WANT TO BE INTERRUPTED*/
-		TONE0.pushed = (INPUT_PORT & 0x1)? true: false; /*BIT 1*/
-		TONE1.pushed = (INPUT_PORT & 0x2)? true: false; /*BIT 2*/
-		TONE2.pushed = (INPUT_PORT & 0x4)? true: false; /*BIT 3*/
-		TONE3.pushed = (INPUT_PORT & 0x8)? true: false; /*BIT 4*/
-		TONE4.pushed = (INPUT_PORT & 0x10)? true: false;/*BIT 5*/
+		INPUT.SW0 = INPUT_PORT & 0x1;
+		INPUT.SW1 = INPUT_PORT & 0x2;
+		INPUT.SW2 = INPUT_PORT & 0x4;
+		INPUT.SW3 = INPUT_PORT & 0x8;
+		INPUT.SW4 = INPUT_PORT & 0x10;
+
+//		TONE0.pushed = (INPUT_PORT & 0x1)? true: false; /*BIT 1*/
+//		TONE1.pushed = (INPUT_PORT & 0x2)? true: false; /*BIT 2*/
+//		TONE2.pushed = (INPUT_PORT & 0x4)? true: false; /*BIT 3*/
+//		TONE3.pushed = (INPUT_PORT & 0x8)? true: false; /*BIT 4*/
+//		TONE4.pushed = (INPUT_PORT & 0x10)? true: false;/*BIT 5*/
 		update = true;/*TELL MAIN THAT THERE IS SOMETHING TO DO*/
 	}/*end ATOMIC BLOCK*/
 }/*end ISR for switch1*/
@@ -194,8 +200,8 @@ int main (void)
 
 	EICRA |= (1<<ISC00); /*EXTERNAL INTERRUPT CONTROL REGISTER A*/	
 	EIMSK |= (1<<INT0);  /* TURN ON INTERRUPT 0*/
-	pwm_init();
-	pwm_start(0x60);	
+	//pwm_init();
+	//pwm_start(0x60);	
 	sei(); 		     /*ENABLE GLOBAL INTERRUPTS*/	
 	
 	while(1){ 	
@@ -203,12 +209,16 @@ int main (void)
 			ATOMIC_BLOCK(ATOMIC_FORCEON){
 				//TODO: PROBABLY A LEANER WAY TO ACCOMPLISH THIS...			
 				temp_out=0;
-				temp_out = ((TONE0.PULSE_WIDTH | TONE1.PULSE_WIDTH | \
+				//temp_out = ((TONE0.PULSE_WIDTH | TONE1.PULSE_WIDTH | \
 				TONE2.PULSE_WIDTH | TONE3.PULSE_WIDTH | TONE4.PULSE_WIDTH)%8);
+				
 				//...OR WE CALL A SEQUENCE FROM A TABLE... 
-				//temp_out |= (INPUT.SW0 | INPUT.SW1 | INPUT.SW2 | INPUT.SW3 | INPUT.SW4);
-				//TODO: NEED TO SET UP SO LOGIC DETERMINES PULSE_WIDTH
+				temp_out |= (INPUT.SW0 | INPUT.SW1 | INPUT.SW2 | INPUT.SW3 | INPUT.SW4);	
+			//TODO: NEED TO SET UP SO LOGIC DETERMINES PULSE_WIDTH
+	//			pwm_start(temp_out);
 				PORTB = temp_out;
+//				_delay_ms(4);
+//				PORTB = 0x0;
 				update = false;
 			}/*end atomic block*/
 		}/*end if*/
