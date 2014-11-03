@@ -105,7 +105,6 @@ volatile bool update = false;
 volatile uint8_t temp_out;
 
 volatile struct input {
-<<<<<<< HEAD
 	volatile uint8_t prior_state;
 	volatile uint8_t PRESCALER;//TODO: ADD USE OF PRESCALER FOR PWM OUTPUT
 	volatile uint8_t SW0;
@@ -113,14 +112,6 @@ volatile struct input {
 	volatile uint8_t SW2;
 	volatile uint8_t SW3;
 	volatile uint8_t SW4;
-=======
-	 uint8_t PRESCALER;//TODO: ADD USE OF PRESCALER FOR PWM OUTPUT
-	 uint8_t SW0;
-	 uint8_t SW1;
-	 uint8_t SW2;
-	 uint8_t SW3;
-	 uint8_t SW4;
->>>>>>> refs/remotes/origin/master
 }INPUT; /*end struct*/
 
 void Move_interrupts(void)
@@ -131,52 +122,29 @@ void Move_interrupts(void)
 
 ISR(INT0_vect){/*INTERRUPT SERVICE ROUTINE*/
 	ATOMIC_BLOCK(ATOMIC_FORCEON){/*WE DO NOT WANT TO BE INTERRUPTED*/
-<<<<<<< HEAD
-		INPUT.prior_state = temp_out;
 		INPUT.SW0 = (PIND & 0b00000001); /*BIT 1*/
 		INPUT.SW1 = (PIND & 0b00000010); /*BIT 2*/
 		INPUT.SW2 = (PIND & 0b00000100); /*BIT 3*/
 		INPUT.SW3 = (PIND & 0b00001000); /*BIT 4*/
 		INPUT.SW4 = (PIND & 0b00010000);/*BIT 5*/
-//		temp_out = INPUT_PORT;
 		update = true;/*TELL MAIN THAT THERE IS SOMETHING TO DO*/
 	}/*end ATOMIC BLOCK*/
 }/*end ISR for switch1*/
 ISR(PCINT2_vect){/*INTERRUPT SERVICE ROUTINE*/
 	ATOMIC_BLOCK(ATOMIC_FORCEON){/*WE DO NOT WANT TO BE INTERRUPTED*/
-		INPUT.prior_state = temp_out;
 		INPUT.SW0 = (PIND & 0b00000001); /*BIT 1*/
 		INPUT.SW1 = (PIND & 0b00000010); /*BIT 2*/
 		INPUT.SW2 = (PIND & 0b00000100); /*BIT 3*/
 		INPUT.SW3 = (PIND & 0b00001000); /*BIT 4*/
 		INPUT.SW4 = (PIND & 0b00010000);/*BIT 5*/
-		//temp_out = INPUT_PORT;
 		update = true;/*TELL MAIN THAT THERE IS SOMETHING TO DO*/
 	}/*end ATOMIC BLOCK*/
 }/*end ISR for switch1*/
-=======
-		INPUT.SW0 = (INPUT_PORT & 0x1); /*BIT 1*/
-		INPUT.SW1 = (INPUT_PORT & 0x2); /*BIT 2*/
-		INPUT.SW2 = (INPUT_PORT & 0x4); /*BIT 3*/
-		INPUT.SW3 = (INPUT_PORT & 0x8); /*BIT 4*/
-		INPUT.SW4 = (INPUT_PORT & 0x10);/*BIT 5*/
-	}/*end ATOMIC BLOCK*/
-	update = true;/*TELL MAIN THAT THERE IS SOMETHING TO DO*/
-}/*end ISR for switch1*/
-/*SINCE ALL INTERRUPT NEED SAME ROUTINE, ALIAS THEM ALL TO SAME ISR*/
-ISR(PCINT16_vect, ISR_ALIASOF(INT0_vect));
-ISR(PCINT17_vect, ISR_ALIASOF(INT0_vect));
-ISR(PCINT18_vect, ISR_ALIASOF(INT0_vect));
-ISR(PCINT19_vect, ISR_ALIASOF(INT0_vect));
-ISR(PCINT20_vect, ISR_ALIASOF(INT0_vect));
->>>>>>> refs/remotes/origin/master
-
 /*MAIN LOOP, INITIALIZE IO, ENABLE INTERRUPTS, SPIN CLOCK CYCLES*/
 int main (void)
 {
  	/*PORT DEFS on PAGE 92 of ATMEL DATASHEET*/	
 	DDRB = 0XFF;  /*PORT B IS NOW ALL OUTPUTS*/
-<<<<<<< HEAD
 	OUTPUT_PORT = 0x00; /*INITIALIZE ALL TO "OFF" STATE*/
 	
 	DDRD = 0x00;  /*PORTD IS NOW ALL INPUTS, OUR INTERRUPTS*/ 
@@ -187,30 +155,12 @@ int main (void)
 	PCICR |= (1<<PCIE2);
 	PCMSK2 |= (1<<PCINT16 | 1<<PCINT17 | 1<<PCINT19 | 1<<PCINT20); 
 
-=======
-	PORTB = 0x00; /*INITIALIZE ALL TO "OFF" STATE*/
-	
-	DDRD = 0x00;  /*PORTD IS NOW ALL INPUTS, OUR INTERRUPTS*/ 
-	PORTD = 0xFF; /*TURN ON PULLUP*/
-
-	EICRA |= (1<<ISC00); /*EXTERNAL INTERRUPT CONTROL REGISTER A*/	
-	EIMSK |= (1<<INT0);  /* TURN ON INTERRUPT 0*/
->>>>>>> refs/remotes/origin/master
 	sei(); 		     /*ENABLE GLOBAL INTERRUPTS*/	
 	
 	while(1){ 	
 		if(update){
 			ATOMIC_BLOCK(ATOMIC_FORCEON){
-<<<<<<< HEAD
 				OUTPUT_PORT = ~(INPUT.SW0 | INPUT.SW1 | INPUT.SW2 | INPUT.SW3 | INPUT.SW4);
-=======
-				//TODO: MAY BE A LEANER WAY TO ACCOMPLISH THIS...			
-				temp_out=0;
-				temp_out |= (INPUT.SW0 | INPUT.SW1 | INPUT.SW2 | INPUT.SW3 | INPUT.SW4);
-				//TODO: NEED TO SET UP SO LOGIC DETERMINES PRESCALER
-				//FOR PWM OUTPUT, NOT JUST LIGHTING UP EACH PORT
-				PORTB = temp_out;
->>>>>>> refs/remotes/origin/master
 				update = false;
 			}/*end atomic block*/
 		}/*end if*/
