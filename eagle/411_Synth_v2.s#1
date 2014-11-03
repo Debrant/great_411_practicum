@@ -1823,8 +1823,8 @@ Source: pui audio inc. SMS-1308MS-2-R.pdf</description>
 <instance part="U3" gate="G$1" x="205.74" y="10.16" rot="R180"/>
 <instance part="GND6" gate="1" x="187.96" y="22.86"/>
 <instance part="R8" gate="G$1" x="124.46" y="55.88" rot="R180"/>
-<instance part="SP1" gate="A" x="271.78" y="83.82"/>
-<instance part="GND7" gate="1" x="271.78" y="58.42"/>
+<instance part="SP1" gate="A" x="226.06" y="5.08"/>
+<instance part="GND7" gate="1" x="226.06" y="-10.16"/>
 </instances>
 <busses>
 </busses>
@@ -1862,8 +1862,10 @@ Source: pui audio inc. SMS-1308MS-2-R.pdf</description>
 </segment>
 <segment>
 <pinref part="SP1" gate="A" pin="2"/>
-<wire x1="271.78" y1="78.74" x2="271.78" y2="60.96" width="0.1524" layer="91"/>
+<wire x1="226.06" y1="0" x2="226.06" y2="-7.62" width="0.1524" layer="91"/>
 <pinref part="GND7" gate="1" pin="GND"/>
+<wire x1="226.06" y1="-7.62" x2="226.06" y2="-10.16" width="0.1524" layer="91"/>
+<junction x="226.06" y="-7.62"/>
 </segment>
 </net>
 <net name="N$1" class="0">
@@ -2103,13 +2105,16 @@ Source: pui audio inc. SMS-1308MS-2-R.pdf</description>
 <segment>
 <pinref part="U3" gate="G$1" pin="B"/>
 <wire x1="215.9" y1="12.7" x2="218.44" y2="12.7" width="0.1524" layer="91"/>
-<pinref part="U3" gate="G$1" pin="A"/>
 <wire x1="218.44" y1="12.7" x2="218.44" y2="10.16" width="0.1524" layer="91"/>
+<pinref part="U3" gate="G$1" pin="A"/>
 <wire x1="218.44" y1="10.16" x2="218.44" y2="7.62" width="0.1524" layer="91"/>
 <wire x1="218.44" y1="7.62" x2="215.9" y2="7.62" width="0.1524" layer="91"/>
-<wire x1="226.06" y1="50.8" x2="190.5" y2="50.8" width="0.1524" layer="91"/>
 <wire x1="218.44" y1="10.16" x2="226.06" y2="10.16" width="0.1524" layer="91"/>
 <wire x1="226.06" y1="10.16" x2="226.06" y2="50.8" width="0.1524" layer="91"/>
+<wire x1="226.06" y1="50.8" x2="190.5" y2="50.8" width="0.1524" layer="91"/>
+<junction x="218.44" y="10.16"/>
+<pinref part="SP1" gate="A" pin="1"/>
+<junction x="226.06" y="10.16"/>
 </segment>
 </net>
 <net name="N$25" class="0">
