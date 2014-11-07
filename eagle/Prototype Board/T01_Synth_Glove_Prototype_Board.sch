@@ -4984,7 +4984,7 @@ new: Attribute TP_SIGNAL_NAME&lt;br&gt;
 </plain>
 <instances>
 <instance part="U1" gate="G$1" x="88.9" y="-12.7"/>
-<instance part="R1" gate="G$1" x="63.5" y="19.05" rot="R90"/>
+<instance part="R1" gate="G$1" x="58.42" y="19.05" rot="R90"/>
 <instance part="C1" gate="G$1" x="11.43" y="77.47"/>
 <instance part="GND1" gate="1" x="58.42" y="-45.72"/>
 <instance part="GND3" gate="1" x="-38.1" y="82.55"/>
@@ -5327,12 +5327,15 @@ new: Attribute TP_SIGNAL_NAME&lt;br&gt;
 <segment>
 <pinref part="U1" gate="G$1" pin="PC6(/RESET)"/>
 <pinref part="R1" gate="G$1" pin="1"/>
-<wire x1="66.04" y1="12.7" x2="63.5" y2="13.97" width="0.1524" layer="91"/>
+<wire x1="66.04" y1="12.7" x2="58.42" y2="13.97" width="0.1524" layer="91"/>
 <wire x1="66.04" y1="12.7" x2="53.34" y2="12.7" width="0.1524" layer="91"/>
 <junction x="66.04" y="12.7"/>
 <label x="55.88" y="13.97" size="1.016" layer="95"/>
 <wire x1="53.34" y1="12.7" x2="53.34" y2="19.05" width="0.1524" layer="91"/>
 <pinref part="R25" gate="G$1" pin="1"/>
+<pinref part="PROTOJMP6" gate="G$1" pin="TP"/>
+<wire x1="73.66" y1="25.4" x2="66.04" y2="25.4" width="0.1524" layer="91"/>
+<wire x1="66.04" y1="25.4" x2="66.04" y2="12.7" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="N$3" class="0">
@@ -5813,12 +5816,8 @@ new: Attribute TP_SIGNAL_NAME&lt;br&gt;
 <pinref part="SW1" gate="G$1" pin="4"/>
 <wire x1="63.5" y1="33.02" x2="63.5" y2="30.48" width="0.1524" layer="91"/>
 <pinref part="R1" gate="G$1" pin="2"/>
-<wire x1="63.5" y1="24.13" x2="63.5" y2="25.4" width="0.1524" layer="91"/>
 <junction x="63.5" y="30.48"/>
-<pinref part="PROTOJMP6" gate="G$1" pin="TP"/>
-<wire x1="63.5" y1="25.4" x2="63.5" y2="30.48" width="0.1524" layer="91"/>
-<wire x1="73.66" y1="25.4" x2="63.5" y2="25.4" width="0.1524" layer="91"/>
-<junction x="63.5" y="25.4"/>
+<wire x1="58.42" y1="24.13" x2="63.5" y2="30.48" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="N$5" class="0">
