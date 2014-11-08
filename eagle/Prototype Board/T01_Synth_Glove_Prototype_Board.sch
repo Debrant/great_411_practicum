@@ -4897,13 +4897,12 @@ new: Attribute TP_SIGNAL_NAME&lt;br&gt;
 <part name="JP1" library="jumper" deviceset="JP8QE" device="" value="0"/>
 <part name="5V7" library="supply2" deviceset="+5V" device=""/>
 <part name="5V8" library="supply2" deviceset="+5V" device=""/>
-<part name="5V4" library="supply2" deviceset="+5V" device=""/>
 <part name="5V9" library="supply2" deviceset="+5V" device=""/>
 <part name="SUPPLY1" library="supply2" deviceset="+9V" device=""/>
 <part name="PROTOJMP1" library="testpad" deviceset="PTR1" device="B2,54"/>
-<part name="PROTOJMP2" library="testpad" deviceset="PTR1" device="B2,54"/>
-<part name="PROTOJMP3" library="testpad" deviceset="PTR1" device="B2,54"/>
-<part name="PROTOJMP4" library="testpad" deviceset="PTR1" device="B2,54"/>
+<part name="PROG_5V" library="testpad" deviceset="PTR1" device="B2,54"/>
+<part name="PROG_SCK" library="testpad" deviceset="PTR1" device="B2,54"/>
+<part name="PROG_RESET" library="testpad" deviceset="PTR1" device="B2,54"/>
 <part name="PROTOJMP5" library="testpad" deviceset="PTR1" device="B2,54"/>
 <part name="PROTOJMP6" library="testpad" deviceset="PTR1" device="B2,54"/>
 </parts>
@@ -5110,13 +5109,12 @@ new: Attribute TP_SIGNAL_NAME&lt;br&gt;
 <instance part="5V8" gate="+5V" x="39.37" y="2.54" smashed="yes">
 <attribute name="VALUE" x="40.259" y="1.143" size="1.778" layer="96"/>
 </instance>
-<instance part="5V4" gate="+5V" x="190.5" y="-36.83"/>
 <instance part="5V9" gate="+5V" x="53.34" y="99.06"/>
 <instance part="SUPPLY1" gate="G$1" x="-22.86" y="99.06"/>
 <instance part="PROTOJMP1" gate="G$1" x="110.49" y="-53.34" rot="R270"/>
-<instance part="PROTOJMP2" gate="G$1" x="200.66" y="-40.64" rot="R90"/>
-<instance part="PROTOJMP3" gate="G$1" x="200.66" y="-46.99" rot="R90"/>
-<instance part="PROTOJMP4" gate="G$1" x="162.56" y="-38.1" rot="R270"/>
+<instance part="PROG_5V" gate="G$1" x="200.66" y="-40.64" rot="R90"/>
+<instance part="PROG_SCK" gate="G$1" x="200.66" y="-46.99" rot="R90"/>
+<instance part="PROG_RESET" gate="G$1" x="162.56" y="-38.1" rot="R270"/>
 <instance part="PROTOJMP5" gate="G$1" x="60.96" y="96.52" rot="R90"/>
 <instance part="PROTOJMP6" gate="G$1" x="76.2" y="25.4" rot="R90"/>
 </instances>
@@ -5302,28 +5300,8 @@ new: Attribute TP_SIGNAL_NAME&lt;br&gt;
 <wire x1="116.84" y1="-53.34" x2="116.84" y2="-45.72" width="0.1524" layer="91"/>
 <junction x="116.84" y="-45.72"/>
 </segment>
-<segment>
-<pinref part="SV1" gate="1" pin="6"/>
-<wire x1="167.64" y1="-44.45" x2="165.1" y2="-44.45" width="0.1524" layer="91"/>
-<wire x1="165.1" y1="-44.45" x2="165.1" y2="-40.64" width="0.1524" layer="91"/>
-<wire x1="165.1" y1="-40.64" x2="157.48" y2="-40.64" width="0.1524" layer="91"/>
-<label x="157.48" y="-40.64" size="1.778" layer="95" rot="R180" xref="yes"/>
-<pinref part="PROTOJMP4" gate="G$1" pin="TP"/>
-<wire x1="165.1" y1="-40.64" x2="165.1" y2="-38.1" width="0.1524" layer="91"/>
-<junction x="165.1" y="-40.64"/>
-</segment>
 </net>
 <net name="RESET" class="0">
-<segment>
-<label x="194.31" y="-54.61" size="1.778" layer="95" xref="yes"/>
-<wire x1="187.96" y1="-54.61" x2="194.31" y2="-54.61" width="0.1524" layer="91"/>
-<pinref part="PROTOJMP3" gate="G$1" pin="TP"/>
-<pinref part="SV1" gate="1" pin="3"/>
-<wire x1="198.12" y1="-46.99" x2="187.96" y2="-46.99" width="0.1524" layer="91"/>
-<wire x1="187.96" y1="-46.99" x2="182.88" y2="-46.99" width="0.1524" layer="91"/>
-<wire x1="187.96" y1="-54.61" x2="187.96" y2="-46.99" width="0.1524" layer="91"/>
-<junction x="187.96" y="-46.99"/>
-</segment>
 <segment>
 <pinref part="U1" gate="G$1" pin="PC6(/RESET)"/>
 <pinref part="R1" gate="G$1" pin="1"/>
@@ -5735,16 +5713,6 @@ new: Attribute TP_SIGNAL_NAME&lt;br&gt;
 <junction x="39.37" y="0"/>
 </segment>
 <segment>
-<pinref part="SV1" gate="1" pin="5"/>
-<wire x1="182.88" y1="-44.45" x2="182.88" y2="-40.64" width="0.1524" layer="91"/>
-<wire x1="182.88" y1="-40.64" x2="190.5" y2="-40.64" width="0.1524" layer="91"/>
-<wire x1="190.5" y1="-40.64" x2="190.5" y2="-39.37" width="0.1524" layer="91"/>
-<pinref part="5V4" gate="+5V" pin="+5V"/>
-<pinref part="PROTOJMP2" gate="G$1" pin="TP"/>
-<wire x1="190.5" y1="-40.64" x2="198.12" y2="-40.64" width="0.1524" layer="91"/>
-<junction x="190.5" y="-40.64"/>
-</segment>
-<segment>
 <wire x1="53.34" y1="86.36" x2="45.72" y2="86.36" width="0.1524" layer="91"/>
 <wire x1="53.34" y1="83.82" x2="53.34" y2="86.36" width="0.1524" layer="91"/>
 <pinref part="R19" gate="G$1" pin="2"/>
@@ -5862,6 +5830,29 @@ new: Attribute TP_SIGNAL_NAME&lt;br&gt;
 <junction x="-19.05" y="96.52"/>
 <pinref part="SUPPLY1" gate="G$1" pin="+9V"/>
 <junction x="-22.86" y="96.52"/>
+</segment>
+</net>
+<net name="PJ4" class="0">
+<segment>
+<pinref part="SV1" gate="1" pin="6"/>
+<wire x1="167.64" y1="-44.45" x2="165.1" y2="-44.45" width="0.1524" layer="91"/>
+<wire x1="165.1" y1="-44.45" x2="165.1" y2="-38.1" width="0.1524" layer="91"/>
+<pinref part="PROG_RESET" gate="G$1" pin="TP"/>
+</segment>
+</net>
+<net name="JP3" class="0">
+<segment>
+<pinref part="PROG_SCK" gate="G$1" pin="TP"/>
+<pinref part="SV1" gate="1" pin="3"/>
+<wire x1="198.12" y1="-46.99" x2="182.88" y2="-46.99" width="0.1524" layer="91"/>
+</segment>
+</net>
+<net name="N$2" class="0">
+<segment>
+<pinref part="SV1" gate="1" pin="5"/>
+<wire x1="182.88" y1="-44.45" x2="182.88" y2="-40.64" width="0.1524" layer="91"/>
+<pinref part="PROG_5V" gate="G$1" pin="TP"/>
+<wire x1="182.88" y1="-40.64" x2="198.12" y2="-40.64" width="0.1524" layer="91"/>
 </segment>
 </net>
 </nets>
