@@ -184,7 +184,7 @@ void pwm_init(void){
 	TONE1.PULSE_WIDTH = (F_CPU/(16*A4));//142
 	TONE2.PULSE_WIDTH = (F_CPU/(16*B4));//126
 	TONE3.PULSE_WIDTH = (F_CPU/(16*C5));//119
-	TONE4.PULSE_WIDTH = (F_CPU/(16*D5));//106
+	TONE4.PULSE_WIDTH = (F_CPU/(26*D5));//106
 	TONE5.PULSE_WIDTH = (F_CPU/(32*D5));//53
 	TONE6.PULSE_WIDTH = (F_CPU/(32*C5));//59
 	TONE7.PULSE_WIDTH = (F_CPU/(32*B4));//63
@@ -194,8 +194,8 @@ void pwm_init(void){
 	/*OUTPUT COMPARE REGISTERS, OUR (5) PWM OUTPUTS:*/
 	OCR0A = TONE0.PULSE_WIDTH;//PIN 10, PD6
 	OCR0B = TONE1.PULSE_WIDTH;//PIN 9,  PD5
-	OCR1A = TONE2.PULSE_WIDTH;//PIN 13, PB1
-	OCR1B = TONE3.PULSE_WIDTH;//PIN 14, PB2
+	OCR1AL = TONE2.PULSE_WIDTH;//PIN 13, PB1
+	OCR1BL = TONE3.PULSE_WIDTH;//PIN 14, PB2
 	OCR2A = TONE4.PULSE_WIDTH;//PIN 15, PB3
 
 	/*TIMER INTERRUPT FLAG REGISTERS:*/
@@ -207,13 +207,13 @@ void pwm_init(void){
 	//TIFR1 |= ();//16-BIT->PORTS: [OC1A,PB1], [OC1B,PB2]
 	//TIFR2 |= ();//8-BIT->PORTS:  [OC2A,PB3], [OC2B,PD3]
 
-	TIMSK0 |= ((1<<OCIE0A) | (1<<OCIE0B));
-	TIMSK1 |= ((1<<OCIE1A) | (1<<OCIE1B));
-	TIMSK2 |= ((1<<OCIE2A) | (1<<OCIE2B));
+	//TIMSK0 |= ((1<<OCIE0A) | (1<<OCIE0B));
+	//TIMSK1 |= ((1<<OCIE1A) | (1<<OCIE1B));
+	//TIMSK2 |= ((1<<OCIE2A) | (1<<OCIE2B));
 	
 	/*TIMER COUNTER CLOCK SOURCES: 8-BIT, INVERTED, PHASE CORRECT, FAST PWM*/
-	TCCR0A |= ((1<<COM0A0) | (1<<COM0B0)| (1<<WGM00) | (1<<WGM01));/*PD*/
-	//TCCR0A |= ((1<<COM0A1) | (1<<COM0A0) | (1<<COM0B1) | (1<<COM0B0)| (1<<WGM00) | (1<<WGM01));/*PD*/
+	//TCCR0A |= ((1<<COM0A0) | (1<<COM0B0)| (1<<WGM00) | (1<<WGM01));/*PD*/
+	TCCR0A |= ((1<<COM0A1) | (1<<COM0A0) | (1<<COM0B1) | (1<<COM0B0)| (1<<WGM00) | (1<<WGM01));/*PD*/
 	TCCR0B |= ((1<<WGM02)); 		/*SELECT: FORCE CLOCK OFF*/
 	TCNT0 = 0;	
 
@@ -222,7 +222,7 @@ void pwm_init(void){
 	/*TIMER COUNTER CLOCK SOURCES: 8-BIT, INVERTED, PHASE CORRECT, FAST PWM*/
 	TCCR1A |= ((1<<COM1A0) | (1<<COM1B0)| (1<<WGM10) | (1<<WGM11) | (1<<WGM13));
 	//TCCR1A |= ((1<<COM1A1) | (1<<COM1A0) | (1<<COM1B1) | (1<<COM1B0)| (1<<WGM10) | (1<<WGM11) | (1<<WGM13));
-	TCCR1B |= ((1<<WGM12)); 		
+	TCCR1B |= (1<<WGM12); 		
 	TCNT1H = 0;
 	TCNT1L = 0;	/*USE THE LOW REGISTER, ACT AS IF ONLY 8-BIT, NOT 16*/
 	
@@ -250,70 +250,90 @@ void adc_kill(){
 }
 
 void pwm_update(void){
-	ATOMIC_BLOCK(ATOMIC_FORCEON){
 		/*TODO: TRY SETTING ONE OCRx SETTING TO '0', SPOOF MULTI IO*/
-		if(1==INPUT.SW0){
-			//OCR0A = ((TONE0.PULSE_WIDTH*ADC_IN)%255);
-			TCCR0B |= ((1<<CS01) | (1<<CS00)); 
-		}
-		else if(1==INPUT.SW1){
-			TCCR1B |= ((1<<CS11) | (1<<CS10)); 
-		}
-		else if(1==INPUT.SW2){
-			TCCR1B |= ((1<<CS11) | (1<<CS10));
-		}
-		else if(1==INPUT.SW3){
-			TCCR2B |= ((1<<CS21) | (1<<CS20));
-		}
-		else if(1==INPUT.SW4){
-			TCCR2B |= ((1<<CS21) | (1<<CS20)); 
-		}
-		else{ 
-			TCCR0B |= ((1<<CS01) | (1<<CS00));
-			TCCR1B |= ((1<<CS11) | (1<<CS10));
-			TCCR2B |= ((1<<CS21) | (1<<CS20));
-	//TODO ONCE DEBUGGED, PUT THESE BACK> (DFLT TO OFF)
-	//		TCCR2B &= ~((1<<CS20) | (1<<CS21));
-	//		TCCR1B &= ~((1<<CS10) | (1<<CS11)); 
-	//		TCCR0B &= ~((1<<CS00) | (1<<CS01));
-		}/*END ELSE*/
-	}/*END ATOMIC BLOCK*/
+	if(!INPUT.SW3){
+		OCR1AL = TONE0.PULSE_WIDTH;
+		OCR1BL = TONE0.PULSE_WIDTH/16;
+	}		
+	else if(!INPUT.SW4){
+		OCR1AL = TONE3.PULSE_WIDTH*2;
+		OCR1BL = TONE3.PULSE_WIDTH/16;
+	}
+	else if(!INPUT.SW5){
+		OCR2A = TONE2.PULSE_WIDTH*4;
+		OCR2B = TONE2.PULSE_WIDTH/16;
+	}
+	else if(!INPUT.SW6){
+		OCR2A = TONE1.PULSE_WIDTH*64;
+		OCR2B = TONE1.PULSE_WIDTH/16;
+	}
+	else if(!INPUT.SW7){
+		OCR1AL = TONE4.PULSE_WIDTH*4;
+		OCR1BL = TONE4.PULSE_WIDTH/16;
+	}
+	else if(!INPUT.SW2){
+		//TODO: CHANGE TO OCR0A!...
+		OCR1BL = TONE5.PULSE_WIDTH*2;
+		OCR1AL = TONE5.PULSE_WIDTH;
+	}
+	else{
+		TCCR0B &= ~(1<<CS20); 
+		TCCR1B &= ~(1<<CS10);
+		TCCR2B &= ~(1<<CS00);
+	}
 }/*END PWM_UPDATE*/
+
 void pwm_kill(){
 	/*KILL ALL PWM TIMER CLOCKS:*/	
-	TCCR0B &= ~((1<<CS00) | (1<<CS01) | (1<<CS02)); 
-	TCCR1B &= ~((1<<CS10) | (1<<CS11) | (1<<CS12)); 
-	TCCR2B &= ~((1<<CS20) | (1<<CS21) | (1<<CS22));
+	TCCR0B &= ~(1<<CS20); 
+	TCCR1B &= ~(1<<CS10);
+	TCCR2B &= ~(1<<CS00);
 }/*END PWM_KILL*/
 
 ISR(PCINT1_vect){
-	ATOMIC_BLOCK(ATOMIC_FORCEON){
-		//PINS D0,1,2,3,4 AND PC3,4,5 ARE OUR INPUTS: 
-		INPUT.SW3 = (3<<(PIND & 0b00000001));//PORT D0
-		INPUT.SW4 = (3<<(PIND & 0b00000010));//PORT D1
-		INPUT.SW5 = (3<<(PIND & 0b00000100));//PORT D2
-		INPUT.SW6 = (3<<(PIND & 0b00001000));//PORT D3
-		INPUT.SW7 = (3<<(PIND & 0b00010000));//PORT D4
+	cli();
+	//PINS D0,1,2,3,4 AND PC3,4,5 ARE OUR INPUTS: 
+	//INPUT.SW3 = PIND0;//PORT D0
+	//INPUT.SW4 = PIND1;//PORT D1
+	//INPUT.SW5 = PIND2;//PORT D2
+	//INPUT.SW6 = PIND3;//PORT D3
+	//INPUT.SW7 = PIND4;//PORT D4
+	
+	INPUT.SW3 = ((~PIND) & 0b00000001);//PORT D0
+	INPUT.SW4 = ((~PIND) & 0b00000010);//PORT D1
+	INPUT.SW5 = ((~PIND) & 0b00000100);//PORT D2
+	INPUT.SW6 = ((~PIND) & 0b00001000);//PORT D3
+	INPUT.SW7 = ((~PIND) & 0b00010000);//PORT D4
 	    	
-		INPUT.SW2 = ((PINC & 0b00001000)>>3);//PORT C3
-	    	INPUT.SW1 = ((PINC & 0b00010000)>>3);//PORT C4
-	    	INPUT.SW0 = ((PINC & 0b00100000)>>3);//PORT C5
+	INPUT.SW2 = ((~PINC) & 0b00100000);//PORT C5
+	INPUT.SW1 = ((~PINC) & 0b00010000);//PORT C4
+	INPUT.SW0 = ((~PINC) & 0b00001000);//PORT C3
+	//INPUT.SW2 = PINC5;//PORT C3
+	//INPUT.SW1 = PINC4;//PORT C4
+	//INPUT.SW0 = PINC3;//PORT C5
 	update = true;	
-	}//END ATOMIC
+	sei();
 }//end pcint11_vect
 ISR(PCINT2_vect){
-	ATOMIC_BLOCK(ATOMIC_FORCEON){
-		INPUT.SW3 = (3<<(PIND & 0b00000001));//PORT D0
-		INPUT.SW4 = (3<<(PIND & 0b00000010));//PORT D1
-		INPUT.SW5 = (3<<(PIND & 0b00000100));//PORT D2
-		INPUT.SW6 = (3<<(PIND & 0b00001000));//PORT D3
-		INPUT.SW7 = (3<<(PIND & 0b00010000));//PORT D4
+	cli();
+	//INPUT.SW3 = PIND0;//PORT D0
+	//INPUT.SW4 = PIND1;//PORT D1
+	//INPUT.SW5 = PIND2;//PORT D2
+	//INPUT.SW6 = PIND3;//PORT D3
+	//INPUT.SW7 = PIND4;//PORT D4
+	
+	
+	INPUT.SW3 = ((~PIND) & 0b00000001);//PORT D0
+	INPUT.SW4 = ((~PIND) & 0b00000010);//PORT D1
+	INPUT.SW5 = ((~PIND) & 0b00000100);//PORT D2
+	INPUT.SW6 = ((~PIND) & 0b00001000);//PORT D3
+	INPUT.SW7 = ((~PIND) & 0b00010000);//PORT D4
 	    	
-		INPUT.SW2 = ((PINC & 0b00001000)>>3);//PORT C3
-	    	INPUT.SW1 = ((PINC & 0b00010000)>>3);//PORT C4
-	    	INPUT.SW0 = ((PINC & 0b00100000)>>3);//PORT C5
+	INPUT.SW2 = ((~PINC) & 0b00100000);//PORT C5
+	INPUT.SW1 = ((~PINC) & 0b00010000);//PORT C4
+	INPUT.SW0 = ((~PINC) & 0b00001000);//PORT C3
 	update = true;		
-	}//END ATOMIC
+	sei();
 }//pcint12_vect
 
 ISR(ADC_vect){
@@ -332,12 +352,13 @@ int main (void)
 	/*PORT DEFS on PAGE 92 of ATMEL DATASHEET*/	
 	//7  6  5  4  3  2  1  0 | '0' IS INPUT, '1' IS OUTPUT:
 	//0  0  0  0  1  1  1  0
-	DDRB  |= ((1<<PB3) | (1<<PB2) | (1<<PB1));  /*PORT B[3:1] ARE OUTPUTS*/
+	DDRB  |= ((1<<DDB3) | (1<<DDB2) | (1<<DDB1));  /*PORT B[3:1] ARE OUTPUTS*/
 	PORTB = 0x0; /*INITIALIZE ALL TO "OFF" STATE*/
 	
 	//PC[5:3] ARE INPUTS SO MAKE SURE 0'S ARE WRITTEN:
-	DDRC = 0b00000000;//TODO MAKE SURE PC6 NOT LOW, RESET!
-	PORTC = 0b00111000;//TURN ON PULLUPS
+	//DDRC = 0b00000000;//TODO MAKE SURE PC6 NOT LOW, RESET!
+	DDRC &= 0b10000000;//TODO MAKE SURE PC6 NOT LOW, RESET!
+	PORTC = 0b01111000;//TURN ON PULLUPS
 
 	//PD0[4:1] ARE INPUTS, PD[6:5] ARE OUTPUTS:
 	//7  6  5  4  3  2  1  0
@@ -354,7 +375,7 @@ int main (void)
 	//TODO: ADD IN TOIE1? TOIE0?
 	
 	TIMSK0 |= ((1<<OCIE0A) | (1<<OCIE0B)); 
-	TIMSK1 |= ((1<<OCIE1A) | (1<<OCIE1B)); 
+	//TIMSK1 |= ((1<<OCIE1A) | (1<<OCIE1B)); 
 	TIMSK2 |= ((1<<OCIE2A) | (1<<OCIE2B)); 
 	
 	pwm_init();/*INITIALIZE PWM REGISTERS*/
@@ -362,20 +383,32 @@ int main (void)
 	sei(); 	   /*ENABLE GLOBAL INTERRUPTS*/	
 	
 	while(1){ 	
-//		if(update){
+		TCNT1H=0;
+		TCNT1L=0;
+		TCNT0 =0;
+		TCNT2 =0;
+		if(update){
+			cli();
+			pwm_update();
 			ATOMIC_BLOCK(ATOMIC_FORCEON){
-			//pwm_update();
-//			OCR1 = 0XFFFF;
-			OCR1A = 0X3FFF;
-			OCR1B = 0XBFFF;
+			TCCR0A |= (1<<WGM01);
+			TCCR0B |= (1<<WGM02);
+			
 			TCCR1A |= (1<<WGM11);
 			TCCR1B |= ((1<<WGM12) | (1<<WGM13));
+			
+			TCCR2A |= (1<<WGM21);
+			TCCR2B |= (1<<WGM22);
+			
+			TCCR0B |= (1<<CS00);			
 			TCCR1B |= (1<<CS10);			
-			//_delay_ms(100);//WANT TO GET RID OF THIS, BUT MAY NEED
-//			pwm_kill();
+			TCCR2B |= (1<<CS20);			
+			_delay_ms(250);//WANT TO GET RID OF THIS, BUT MAY NEED
+			pwm_kill();
 			update = false;
-//			}
-		}/*end if*/
+			}
+			sei();	
+		}
 	}/*end while*/
 }/*end main*/
 /******************************************************************************
