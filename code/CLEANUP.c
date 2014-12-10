@@ -106,7 +106,7 @@ volatile uint8_t SW6;
 volatile uint8_t SW7;
 
 /******************************************************************************
- *
+ * 	THIS STRUCT HOUSES OUR VALUE FOR CURRENT OUTPUT SETTINGS:
  * ***************************************************************************/
 volatile struct output{
 	uint8_t scale;
@@ -118,7 +118,7 @@ volatile struct output{
 	uint32_t PULSE_WIDTH4;
 }OUTPUT;
 /******************************************************************************
- *
+ * 	SCALE PARAMETERS TO FREQUENCY AND PRESCALER:
  * ***************************************************************************/
 void scale(uint32_t scalar){
 	if(128==scalar){
@@ -151,7 +151,7 @@ void scale(uint32_t scalar){
 	}
 }
 /******************************************************************************
- *
+ * 	INITIALIZE PWM SETTINGS:
  * ***************************************************************************/
 void pwm_init(void){
 
@@ -169,7 +169,7 @@ void pwm_init(void){
 	
 }/*end init*/
 /******************************************************************************
- *
+ * 	KILL ALL PWM CLOCKS, (CURRENTLY UNUSED)
  * ***************************************************************************/
 void pwm_kill(){
 	/*KILL ALL PWM TIMER CLOCKS:*/	
@@ -182,7 +182,7 @@ void pwm_kill(){
 	TCCR0B &= 0xF8;
 }/*END PWM_KILL*/
 /******************************************************************************
- *
+ * 	INTIALIZE ADC PARAMETERS FOR INPUT:
  * ***************************************************************************/
 void adc_init(){
 	ADMUX=0;
@@ -196,13 +196,13 @@ void adc_init(){
 	ADCSRA |= ((1<<ADEN) | (1<<ADIE));//P255,256
 }/*end adc_start*/
 /******************************************************************************
- *
+ * 	KILL ADC INPUT ENABLE AND AUTO TRIGGER:
  * ***************************************************************************/
 void adc_kill(){
 	ADCSRA &= ~((1<<ADEN) | (1<<ADATE));
 }//END ADC_KILL()
 /******************************************************************************
- *
+ * 	UPDATE PWM MODIFIERS AFTER SWITCH PRESS:
  * ***************************************************************************/
 void pwm_update(){
 	//TODO USE MOD OPERATOR IF POSSIBLE!
@@ -218,7 +218,7 @@ void pwm_update(){
 	else MOD1=1;
 }//END PWM_UPDATE
 /******************************************************************************
- *
+ * 	IMPLEMENT PWM MODIFIERS TO OUTPUT WAVEFORM:
  * ***************************************************************************/
 void pwm_output(){
 	switch(MOD2){
@@ -268,7 +268,7 @@ void pwm_output(){
 	}
 }/*END PWM_OUTPUT*/
 /******************************************************************************
- *
+ * 	INTERRUPT VECTORS:
  * ***************************************************************************/
 
 ISR(PCINT1_vect){
@@ -337,7 +337,7 @@ ISR(PCINT2_vect){
 }//end pcint2_vect
 
 /******************************************************************************
- *
+ * 	ADC INTERRUPT VECTOR, TRIGGERS WHEN CONVERSION COMPLETE:
  * ***************************************************************************/
 ISR(ADC_vect){
 	cli();
@@ -346,7 +346,7 @@ ISR(ADC_vect){
 	sei();
 }//ADC_vect()
 /******************************************************************************
- *
+ * 	MAIN LOOP, PRIMARILY IO PORT INITIALIZATIONS AND WHILE(1) LOOP:
  * ***************************************************************************/
 
 /*MAIN LOOP, INITIALIZE IO, ENABLE INTERRUPTS, SPIN CLOCK CYCLES*/
