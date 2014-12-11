@@ -106,7 +106,7 @@ void pwm_init(void){
 	TCNT0 = 0;	
 	TCCR2A |= ((1<<COM2A1) | (1<<WGM20) | (1<<WGM21));//WORKS!
 	TCNT2 = 0;	
-	OUTPUT.PULSE_WIDTH0 = (F_CPU/C_NOTE);
+	OUTPUT.PULSE_WIDTH0 = (F_CPU/C_NOTE); 
 	OUTPUT.PULSE_WIDTH1 = (F_CPU/D_NOTE);
 	OUTPUT.PULSE_WIDTH2 = (F_CPU/E_NOTE);
 	OUTPUT.PULSE_WIDTH3 = (F_CPU/G_NOTE);
@@ -116,13 +116,18 @@ void pwm_init(void){
  * 	INTIALIZE ADC PARAMETERS FOR INPUT:
  * ***************************************************************************/
 void adc_init(){
-	ADMUX=0;
-	ADMUX |= (1<<REFS0);
-	ADMUX |= (1<<MUX0);
-	ADMUX |= (1<<ADLAR);
-	ADCSRA |= (1<<ADPS0);//P255,256
-	ADCSRB = 0x0;//FREE RUNNING MODE
-	ADCSRA |= ((1<<ADEN) | (1<<ADIE));//P255,256
+	ADMUX |= (1<<ADLAR); //SET REGISTER TO LEFT ADJUST, USE AS 8-BIT, !16
+	
+	ADMUX &= 0xF0; 	     //MASK OFF LOWER BITS FOR CONFIGURATION
+	ADMUX |= (1<<REFS0); //SET REFERENCE TO AVCC W/ CAP TO GROUND
+	ADMUX |= (1<<MUX0);  //INITIALIZE TO ADC1, PC1, PIN 24
+	ADCSRA |= (1<<ADEN); //P255,256
+	_delay_ms(1); 	     //ADEN ENABLE TAKES ~12 ADC CLK CYCLES, @~200KHZ
+	ADCSRA |= (1<<ADATE);//SET TO AUTO TRIGGER ADC CONVERSION EVENT
+	ADCSRB &= 0xF8;      //FREE RUNNING MODE
+	ADCSRA |= (1<<ADPS0);//1MHZ / 200KHZ = 5, SO ROUND UP TO 8 FOR PRESCLR
+	ADCSRA |= (1<<ADPS1);//OTHER PORTION OF PRESCALER
+	ADCSRA |= (1<<ADIE); //ADC INTERRUPT ENABLE
 }/*end adc_start*/
 /******************************************************************************
  * 	KILL ADC INPUT ENABLE AND AUTO TRIGGER:
@@ -136,20 +141,20 @@ void adc_kill(){
 void pwm_update(){
 	if(SW0){
 		 ++MOD2;
-		if(3==MOD2) MOD2=0;	
+		if(MOD2>2) MOD2=0;	
 	}
 	if(SW1){
 		 (--MOD2);
-		 if(-1==MOD2) MOD2=2;
+		 if(MOD2<0) MOD2=2;
 	}	
 	if(SW2){ 
 		MOD1=ADC_0;
 		MOD3=ADC_1;
 	}
-	else{
-		MOD1=1;
-		MOD3=1;
-	}
+	//else{
+	//	MOD1=1;
+	//	MOD3=1;
+	//}
 	if(SW3) OUTPUT.PULSE = OUTPUT.PULSE_WIDTH0;		
 	if(SW4) OUTPUT.PULSE = OUTPUT.PULSE_WIDTH1;
 	if(SW5) OUTPUT.PULSE = OUTPUT.PULSE_WIDTH2;
@@ -162,24 +167,26 @@ void pwm_update(){
 void pwm_output(){
 	switch(MOD2){
 		case 0: 
-			OCR0A = ((64*MOD3)*(OUTPUT.PULSE/MOD1));
+			//OCR0A = (MOD3*(OUTPUT.PULSE*MOD1))%255;
+			OCR0A = (10*MOD1*OUTPUT.PULSE);
 			TCCR0B ^= _BV(CS01);
 		break;
 		case 1:
-			OCR0A = ((256*MOD3)*(OUTPUT.PULSE/MOD1));
+			//OCR0A = (MOD3*(OUTPUT.PULSE/MOD1))%128;
+			OCR0A = (MOD1*OUTPUT.PULSE);
 			TCCR0B ^= _BV(CS01);
 		break;
 		case 2:
-			OCR0A = ((1024*MOD3)*(OUTPUT.PULSE/MOD1));
+			//OCR0A = ((10*MOD1)*(OUTPUT.PULSE/MOD3)%64);
+			OCR0A = ((OUTPUT.PULSE/MOD1));
 			TCCR0B ^= _BV(CS01);
 		break;
 		default: break;
-	}
+	}//END SWITCH
 }/*END PWM_OUTPUT*/
 /******************************************************************************
  * 	INTERRUPT VECTORS:
  * ***************************************************************************/
-
 ISR(PCINT1_vect){
 	//UBER CRUDE DEBOUNCING: CHECK, DELAY, CHECK AGAIN..
 	//IT IS TERRIBLE PRACTICE TO DELAY IN AN ISR BUT... YA...
@@ -249,24 +256,22 @@ ISR(PCINT2_vect){
  * ***************************************************************************/
 ISR(ADC_vect){
 	cli();
-	if(!ADC_arb){
-		ADMUX &= (1<<MUX0);
-		ADMUX |= (1<<MUX1); 
+	//if(!ADC_arb){
+	//	ADMUX &= ~(1<<MUX0);
+	//	ADMUX |= (1<<MUX1); 
 		ADC_0 = ADCH;//PRIOR CONVERSION COMPLETES BEFORE CHANGE, SO, OK
-	}
-	else{
-		ADMUX &= (1<<MUX1);
-		ADMUX |= (1<<MUX0); 
-		ADC_1 = ADCH;
-	}
-	ADC_arb = !ADC_arb;//INITIALIZED AS FALSE, SO SHOULD START WITH ADC_0
-	//ADC_arb ^= ADC_arb; //USE IF BITWISE NEGATION WONT RESOLVE ON BOOL
+	//}
+	//else{
+	//	ADMUX &= ~(1<<MUX1);
+	//	ADMUX |= (1<<MUX0); 
+	//	ADC_1 = ADCH;
+	//}
+	//ADC_arb = (!ADC_arb);//INITIALIZED AS FALSE, SO SHOULD START WITH ADC_0
 	sei();
 }//ADC_vect()
 /******************************************************************************
  * 	MAIN LOOP, PRIMARILY IO PORT INITIALIZATIONS AND WHILE(1) LOOP:
  * ***************************************************************************/
-
 /*MAIN LOOP, INITIALIZE IO, ENABLE INTERRUPTS, SPIN CLOCK CYCLES*/
 int main (void)
 {
@@ -293,8 +298,8 @@ int main (void)
 	pwm_init();/*INITIALIZE PWM REGISTERS*/
 	adc_init();/*INITIALIZE ADC INPUT REGISTERS*/
 	
-	ADCSRA |= ((1<<ADSC));/*START CONVERSION*/
 	sei(); 	   /*ENABLE GLOBAL INTERRUPTS*/	
+	ADCSRA |= ((1<<ADSC));/*START CONVERSION*/
 	
 	while(1){ 	
 		//REENABLE IF USING ADC_KILL() P255,256
@@ -303,7 +308,6 @@ int main (void)
 				pwm_update();
 				pwm_output();
 				update = false;
-//				pwm_kill();
 			}//END ATOMIC BLOCK
 		}//END IF
 	}/*end while*/
