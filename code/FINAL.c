@@ -50,8 +50,7 @@
  * TODO: SWITCH ALL PINS TO NEW ONES FROM HARDWARE
  * **********************************************************************/
 #define F_CPU 1000000UL
-//#define F_CPU 8000000UL
-//#define F_CPU 2000000UL
+
 #include<avr/io.h>
 #include<avr/interrupt.h>
 #include<util/delay.h>
@@ -72,13 +71,14 @@ volatile bool ADC_arb = false;
 volatile uint16_t ADC_0;
 volatile uint16_t ADC_1;
 volatile uint16_t MOD1; 	//ADC INPUT BUFFER VARIABLE
-volatile int MOD2; 		//CLOCK SCALER MODIFIER VARIABLE
+volatile int MOD2 = 2; 		//CLOCK SCALER MODIFIER VARIABLE
 volatile uint16_t MOD3;
 
 /*ALTERNATE FUNCTION BUTTONS:*/
 volatile uint8_t SW0;
 volatile uint8_t SW1;
 volatile uint8_t SW2;
+
 /*THESE ARE OUR FINGER BUTTONS:*/
 volatile uint8_t SW3;
 volatile uint8_t SW4;
@@ -102,24 +102,15 @@ volatile struct output{
  * 	INITIALIZE PWM SETTINGS:
  * ***************************************************************************/
 void pwm_init(void){
-
-	TCCR0A |= ((1<<COM0A1) | (1<<WGM00) | (1<<WGM01));/*PD*/
+	TCCR0A |= ((1<<COM0A0) | (1<<COM0A1) | (1<<WGM00) | (1<<WGM01));/*PD*/
 	TCNT0 = 0;	
-
-	TCCR1A |= ((1<<COM1A1) | (1<<WGM10) | (1<<WGM11) | (1<<WGM13));
-	TCCR1B |= (1<<WGM12); 		
-	TCNT1H = 0;
-	TCNT1L = 0;	/*USE THE LOW REGISTER, ACT AS IF ONLY 8-BIT, NOT 16*/
-	
-	TCCR2A |= ((1<<COM2A1) | (1<<WGM20) | (1<<WGM01));
-	TCCR2B |= ((1<<WGM22));
+	TCCR2A |= ((1<<COM2A1) | (1<<WGM20) | (1<<WGM21));//WORKS!
 	TCNT2 = 0;	
-	
-	OUTPUT.PULSE_WIDTH0 = (F_CPU/(C_NOTE));
-	OUTPUT.PULSE_WIDTH1 = (F_CPU/(D_NOTE));
-	OUTPUT.PULSE_WIDTH2 = (F_CPU/(E_NOTE));
-	OUTPUT.PULSE_WIDTH3 = (F_CPU/(G_NOTE));
-	OUTPUT.PULSE_WIDTH4 = (F_CPU/(A_NOTE));
+	OUTPUT.PULSE_WIDTH0 = (F_CPU/C_NOTE);
+	OUTPUT.PULSE_WIDTH1 = (F_CPU/D_NOTE);
+	OUTPUT.PULSE_WIDTH2 = (F_CPU/E_NOTE);
+	OUTPUT.PULSE_WIDTH3 = (F_CPU/G_NOTE);
+	OUTPUT.PULSE_WIDTH4 = (F_CPU/A_NOTE);
 }/*end init*/
 /******************************************************************************
  * 	INTIALIZE ADC PARAMETERS FOR INPUT:
@@ -129,10 +120,8 @@ void adc_init(){
 	ADMUX |= (1<<REFS0);
 	ADMUX |= (1<<MUX0);
 	ADMUX |= (1<<ADLAR);
-	//TODO: ADD IN ADC0!->NOT ADDED IN HERE, TOGGLED IN ADC_vect ISR!
 	ADCSRA |= (1<<ADPS0);//P255,256
 	ADCSRB = 0x0;//FREE RUNNING MODE
-	
 	ADCSRA |= ((1<<ADEN) | (1<<ADIE));//P255,256
 }/*end adc_start*/
 /******************************************************************************
@@ -145,7 +134,6 @@ void adc_kill(){
  * 	UPDATE PWM MODIFIERS AFTER SWITCH PRESS:
  * ***************************************************************************/
 void pwm_update(){
-	//TODO USE MOD OPERATOR IF POSSIBLE!
 	if(SW0){
 		 ++MOD2;
 		if(3==MOD2) MOD2=0;	
@@ -173,19 +161,17 @@ void pwm_update(){
  * ***************************************************************************/
 void pwm_output(){
 	switch(MOD2){
-		case 0: //32
-			OCR0A = (MOD3*(OUTPUT.PULSE/MOD1));
+		case 0: 
+			OCR0A = ((64*MOD3)*(OUTPUT.PULSE/MOD1));
 			TCCR0B ^= _BV(CS01);
-			TCCR0B ^= _BV(CS00);
 		break;
-		case 1: //64
-			OCR0A = (MOD3*(OUTPUT.PULSE/MOD1));
-			TCCR0B ^= _BV(CS02);
+		case 1:
+			OCR0A = ((256*MOD3)*(OUTPUT.PULSE/MOD1));
+			TCCR0B ^= _BV(CS01);
 		break;
-		case 2: //128
-			OCR0A = (MOD3*(OUTPUT.PULSE/MOD1));
-			TCCR0B ^= _BV(CS02);
-			TCCR0B ^= _BV(CS00);
+		case 2:
+			OCR0A = ((1024*MOD3)*(OUTPUT.PULSE/MOD1));
+			TCCR0B ^= _BV(CS01);
 		break;
 		default: break;
 	}
@@ -199,29 +185,28 @@ ISR(PCINT1_vect){
 	//IT IS TERRIBLE PRACTICE TO DELAY IN AN ISR BUT... YA...
 	cli();
 	SW0 = ((~PINC) & 0b00001000);//PORT C3
-	_delay_ms(1);
+	_delay_ms(2);
 	SW0 = ((~PINC) & 0b00001000);//PORT C3
 	SW1 = ((~PINC) & 0b00010000);//PORT C5
-	_delay_ms(1);
+	_delay_ms(2);
 	SW1 = ((~PINC) & 0b00010000);//PORT C5
 	SW2 = ((~PINC) & 0b00100000);//PORT C5
-	_delay_ms(1);
+	_delay_ms(2);
 	SW2 = ((~PINC) & 0b00100000);//PORT C5
 	
 	SW3 = ((~PIND) & 0b00000001);//PORT D0
-	_delay_ms(1);
+	_delay_ms(2);
 	SW3 = ((~PIND) & 0b00000001);//PORT D0
 	SW4 = ((~PIND) & 0b00000010);//PORT D1
-	_delay_ms(1);
+	_delay_ms(2);
 	SW4 = ((~PIND) & 0b00000010);//PORT D1
 	SW5 = ((~PIND) & 0b00000100);//PORT D2
-	_delay_ms(1);
-	SW5 = ((~PIND) & 0b00000100);//PORT D2
+	_delay_ms(2);
 	SW6 = ((~PIND) & 0b00001000);//PORT D3
-	_delay_ms(1);
 	SW6 = ((~PIND) & 0b00001000);//PORT D3
+	_delay_ms(2);
 	SW7 = ((~PIND) & 0b00010000);//PORT D4    	
-	_delay_ms(1);
+	_delay_ms(2);
 	SW7 = ((~PIND) & 0b00010000);//PORT D4    	
 	update = true;
 	sei();
@@ -231,29 +216,29 @@ ISR(PCINT2_vect){
 	cli();
 	//UBER CRUDE DEBOUNCING: CHECK, DELAY, CHECK AGAIN..
 	SW0 = ((~PINC) & 0b00001000);//PORT C3
-	_delay_ms(1);
+	_delay_ms(2);
 	SW0 = ((~PINC) & 0b00001000);//PORT C3
 	SW1 = ((~PINC) & 0b00010000);//PORT C5
-	_delay_ms(1);
+	_delay_ms(2);
 	SW1 = ((~PINC) & 0b00010000);//PORT C5
 	SW2 = ((~PINC) & 0b00100000);//PORT C5
-	_delay_ms(1);
+	_delay_ms(2);
 	SW2 = ((~PINC) & 0b00100000);//PORT C5
 	
 	SW3 = ((~PIND) & 0b00000001);//PORT D0
-	_delay_ms(1);
+	_delay_ms(2);
 	SW3 = ((~PIND) & 0b00000001);//PORT D0
 	SW4 = ((~PIND) & 0b00000010);//PORT D1
-	_delay_ms(1);
+	_delay_ms(2);
 	SW4 = ((~PIND) & 0b00000010);//PORT D1
 	SW5 = ((~PIND) & 0b00000100);//PORT D2
-	_delay_ms(1);
+	_delay_ms(2);
 	SW5 = ((~PIND) & 0b00000100);//PORT D2
 	SW6 = ((~PIND) & 0b00001000);//PORT D3
-	_delay_ms(1);
+	_delay_ms(2);
 	SW6 = ((~PIND) & 0b00001000);//PORT D3
 	SW7 = ((~PIND) & 0b00010000);//PORT D4    	
-	_delay_ms(1);
+	_delay_ms(2);
 	SW7 = ((~PIND) & 0b00010000);//PORT D4    	
 	update = true;		
 	sei();
@@ -315,7 +300,6 @@ int main (void)
 		//REENABLE IF USING ADC_KILL() P255,256
 		if(update){
 			ATOMIC_BLOCK(ATOMIC_FORCEON){
-				ADC_0 = ADCH;
 				pwm_update();
 				pwm_output();
 				update = false;
